@@ -1,0 +1,27 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Bytecode y caches
+.pytest_cache/
+.ruff_cache/
+
+# Secretos y variables de entorno locales
+.env
+.env.*
+*.local
+
+# IDEs y SO
+.vscode/
+.idea/
+.DS_Store
+*.swp
