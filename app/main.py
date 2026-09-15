@@ -1,13 +1,21 @@
+import tomllib
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
-from importlib.metadata import PackageNotFoundError, version
 from app.data_access import InventoryRepository
 from app.middleware import request_timing_middleware
 from app.schemas import Item
 
-try:
-    APP_VERSION = version("inventoryapi")
-except PackageNotFoundError:
-    APP_VERSION = "0.1.0-dev"
+def get_project_version() -> str:
+    # Busca pyproject.toml en la raíz (un nivel arriba de app/)
+    pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    try:
+        with open(pyproject_path, "rb") as f:
+            data = tomllib.load(f)
+            return data["project"]["version"]
+    except Exception:
+        return "0.1.0-dev"
+        
+APP_VERSION = get_project_version()
 
 app = FastAPI(
     title="Inventory API",
