@@ -1,21 +1,27 @@
 from fastapi import FastAPI, HTTPException
-
+from importlib.metadata import PackageNotFoundError, version
 from app.data_access import InventoryRepository
 from app.middleware import request_timing_middleware
 from app.schemas import Item
 
+try:
+    APP_VERSION = version("inventoryapi")
+except PackageNotFoundError:
+    APP_VERSION = "0.1.0-dev"
+
 app = FastAPI(
     title="Inventory API",
     description="API básica de gestión de inventario para TP DevOps",
-    version="0.1.0",
+    version=APP_VERSION,
 )
+
 app.middleware("http")(request_timing_middleware)
 
 inventory_repository = InventoryRepository()
 
 @app.get("/", status_code=200)
 def read_root():
-    return {"status": "healthy", "service": "inventory-api"}
+    return {"status": "healthy", "service": "inventory-api", "version": APP_VERSION}
 
 @app.get("/items", status_code=200)
 def get_items():
