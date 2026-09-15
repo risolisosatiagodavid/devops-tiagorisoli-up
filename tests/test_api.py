@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-
+from app.main import APP_VERSION
 from app.main import app, inventory_repository
 
 
@@ -24,7 +24,11 @@ def created_item(client):
 def test_read_root(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy", "service": "inventory-api"}
+    assert response.json() == {
+    "status": "healthy", 
+    "service": "inventory-api",
+    "version": APP_VERSION,
+    }
     assert "x-process-time" in response.headers
 
 
