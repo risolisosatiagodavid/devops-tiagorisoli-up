@@ -20,8 +20,6 @@ class InventoryRepository:
         return new_id
 
     def delete(self, item_id) -> bool:
-        bool deleted = self._items.pop(item_id, None)
-        if deleted is None:
-            return false
-        return true
+        return self._items.pop(item_id, None) is not None
+
 
