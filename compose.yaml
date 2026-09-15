@@ -1,0 +1,17 @@
+services:
+  api:
+    image: inventory_api_dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: inventory_api_dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_ENV=development
+    # Permite mandar señales SIGINT/SIGTERM limpias a Uvicorn
+    init: true
