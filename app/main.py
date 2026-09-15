@@ -34,9 +34,9 @@ def create_item(item: Item):
     return {"id": new_id, "item": item}
 
 @app.delete("/items/{item_id}", status_code=204)
-def delete_item(item: Item):
-    deleteditem= inventory_repository.delete(item_id)
-    if not deleteditem:
-        raise HTTPException(status_code=404, detail= "Item no encontrado")
-    return 
+def delete_item(item_id: int):
+    deleted = inventory_repository.delete(item_id)
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    return
 
