@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Local virtual environments
+.venv/
+venv/
+env/
+ENV/
+pyenv/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Version control
+.git
+.gitignore
+.github/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+secrets.json
+
+# Local databases (if using SQLite/Docker volumes locally)
+*.db
+*.sqlite3
+postgres-data/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Documentation and logs
+*.log
+docs/
+site/
