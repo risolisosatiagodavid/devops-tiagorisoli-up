@@ -1,3 +1,14 @@
+## v0.3.1 (2026-09-15)
+
+### Feat
+
+- add CI pipeline configuration in ci.yml (#9)
+- add compose for prod and dev (#8)
+
+### Fix
+
+- missing version field in read root test
+
 ## v0.3.0 (2026-09-15)
 
 ### Feat
