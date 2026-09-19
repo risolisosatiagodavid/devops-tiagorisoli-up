@@ -19,6 +19,15 @@ class InventoryRepository:
         self._items[new_id] = item
         return new_id
 
+    def update(self, item_id: int, changes: dict) -> Item | None:
+        item = self._items.get(item_id)
+        if item is None:
+            return None
+
+        updated_item = item.model_copy(update=changes)
+        self._items[item_id] = updated_item
+        return updated_item
+
     def delete(self, item_id) -> bool:
         return self._items.pop(item_id, None) is not None
 
