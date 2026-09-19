@@ -3,7 +3,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from app.data_access import InventoryRepository
 from app.middleware import request_timing_middleware
-from app.schemas import Item
+from app.schemas import Item, ItemUpdate
 
 def get_project_version() -> str:
     # Busca pyproject.toml en la raíz (un nivel arriba de app/)
@@ -46,6 +46,17 @@ def get_item(item_id: int):
 def create_item(item: Item):
     new_id = inventory_repository.create(item)
     return {"id": new_id, "item": item}
+
+@app.patch("/items/{item_id}", status_code=200)
+def update_item(item_id: int, changes: ItemUpdate):
+    update_data = changes.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="Debe enviar al menos un campo para actualizar")
+
+    updated_item = inventory_repository.update(item_id, update_data)
+    if updated_item is None:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    return updated_item
 
 @app.delete("/items/{item_id}", status_code=204)
 def delete_item(item_id: int):

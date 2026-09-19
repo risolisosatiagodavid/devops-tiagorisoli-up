@@ -20,7 +20,7 @@ def created_item(client):
     assert response.status_code == 201
     return response.json()
 
-
+## Root
 def test_read_root(client):
     response = client.get("/")
     assert response.status_code == 200
@@ -31,7 +31,7 @@ def test_read_root(client):
     }
     assert "x-process-time" in response.headers
 
-
+#POST
 def test_create_item_success(client):
     item_data = {"name": "Teclado Mecanico", "price": 120.0, "quantity": 5}
     response = client.post("/items", json=item_data)
@@ -49,7 +49,7 @@ def test_create_item_invalid_data(client):
     assert response.status_code == 422
     assert "x-process-time" in response.headers
 
-
+#GET
 def test_get_items_success(client):
     response = client.get("/items")
     assert response.status_code == 200
@@ -71,6 +71,34 @@ def test_get_item_not_found(client):
     assert "x-process-time" in response.headers
 
 
+#PATCH
+def test_update_item_success(client, created_item):
+    item_id = created_item["id"]
+    response = client.patch(f"/items/{item_id}", json={"price": 125.0})
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "name": "Mouse gamer",
+        "price": 125.0,
+        "quantity": 10,
+    }
+    assert "x-process-time" in response.headers
+
+def test_update_item_not_found(client):
+    response = client.patch("/items/99999", json={"price": 125.0})
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Item no encontrado"}
+    assert "x-process-time" in response.headers
+
+def test_update_item_without_fields(client, created_item):
+    item_id = created_item["id"]
+    response = client.patch(f"/items/{item_id}", json={})
+
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Debe enviar al menos un campo para actualizar"}
+
+#DELETE
 def test_delete_item_success(client, created_item):
     item_id = created_item["id"]
     response = client.delete(f"/items/{item_id}")
