@@ -1,9 +1,14 @@
+## v0.4.0 (2026-09-19)
+
+### Feat
+
+- add patch method and tests (#13)
+
 ## v0.3.1 (2026-09-15)
 
 ### Feat
 
 - add CI pipeline configuration in ci.yml (#9)
-- add compose for prod and dev (#8)
 
 ### Fix
 
@@ -19,7 +24,6 @@
 
 ### Feat
 
-- add compose for production and development
 - add app version (#6)
 - add dockerfile and dockerignore (#4)
 - Add unit tests for POST, GET, DELETE (#2)
