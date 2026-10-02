@@ -25,3 +25,8 @@ env/
 .idea/
 .DS_Store
 *.swp
+
+# Base de datos
+
+*.db
+*.sqlite3
