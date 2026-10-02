@@ -2,6 +2,7 @@ import tomllib
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from app.data_access import InventoryRepository
+from app.database import init_db
 from app.middleware import request_timing_middleware
 from app.schemas import Item, ItemUpdate
 
@@ -25,6 +26,7 @@ app = FastAPI(
 
 app.middleware("http")(request_timing_middleware)
 
+init_db()
 inventory_repository = InventoryRepository()
 
 @app.get("/", status_code=200)
