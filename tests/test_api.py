@@ -10,7 +10,7 @@ def client():
 
 @pytest.fixture(autouse=True)
 def clean_repository():
-    inventory_repository._items.clear()
+    inventory_repository.clear()
     yield
 
 @pytest.fixture

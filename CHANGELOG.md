@@ -1,3 +1,19 @@
+## v0.5.0 (2026-10-02)
+
+### Feat
+
+- add sqlite database session logic
+
+### Fix
+
+- **test_api**: solve clean repository feature db integration
+
+### Refactor
+
+- swap in memory data for database persistence
+- add database connection to main.py
+- add item model to database.py
+
 ## v0.4.0 (2026-09-19)
 
 ### Feat

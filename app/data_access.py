@@ -1,34 +1,77 @@
+from sqlalchemy import select
+
+from app.database import ItemModel, SessionLocal
 from app.schemas import Item
 
 
 class InventoryRepository:
     def __init__(self) -> None:
-        self._items: dict[int, Item] = {
-            1: Item(name="Teclado Mecánico", price=75.5, quantity=10),
-            2: Item(name="Mouse Inalámbrico", price=45.0, quantity=25),
-        }
+        self.session_factory = SessionLocal
+
+    @staticmethod
+    def _to_item(item_model: ItemModel) -> Item:
+        return Item(
+            name=item_model.name,
+            price=item_model.price,
+            quantity=item_model.quantity,
+        )
 
     def get_all(self) -> dict[int, Item]:
-        return self._items
+        with self.session_factory() as session:
+            item_models = session.execute(
+                select(ItemModel).order_by(ItemModel.id)
+            ).scalars().all()
+
+        return {
+            item_model.id: self._to_item(item_model)
+            for item_model in item_models
+        }
 
     def get_by_id(self, item_id: int) -> Item | None:
-        return self._items.get(item_id)
+        with self.session_factory() as session:
+            item_model = session.get(ItemModel, item_id)
+            if item_model is None:
+                return None
+            return self._to_item(item_model)
 
     def create(self, item: Item) -> int:
-        new_id = max(self._items.keys(), default=0) + 1
-        self._items[new_id] = item
-        return new_id
+        with self.session_factory() as session:
+            item_model = ItemModel(
+                name=item.name,
+                price=item.price,
+                quantity=item.quantity,
+            )
+            session.add(item_model)
+            session.commit()
+            session.refresh(item_model)
+            return item_model.id
 
     def update(self, item_id: int, changes: dict) -> Item | None:
-        item = self._items.get(item_id)
-        if item is None:
-            return None
+        with self.session_factory() as session:
+            item_model = session.get(ItemModel, item_id)
+            if item_model is None:
+                return None
 
-        updated_item = item.model_copy(update=changes)
-        self._items[item_id] = updated_item
-        return updated_item
+            for field, value in changes.items():
+                setattr(item_model, field, value)
 
-    def delete(self, item_id) -> bool:
-        return self._items.pop(item_id, None) is not None
+            session.commit()
+            session.refresh(item_model)
+            return self._to_item(item_model)
+
+    def delete(self, item_id: int) -> bool:
+        with self.session_factory() as session:
+            item_model = session.get(ItemModel, item_id)
+            if item_model is None:
+                return False
+
+            session.delete(item_model)
+            session.commit()
+            return True
+
+    def clear(self) -> None:
+        with self.session_factory() as session:
+            session.query(ItemModel).delete()
+            session.commit()
 
 
