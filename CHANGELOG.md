@@ -1,3 +1,15 @@
+## v0.5.1 (2026-10-09)
+
+### Fix
+
+- **database**: resolve database relative path issue
+
+## v0.5.1 (2026-10-09)
+
+### Fix
+
+- **database**: resolve database relative path issue
+
 ## v0.5.0 (2026-10-02)
 
 ### Feat

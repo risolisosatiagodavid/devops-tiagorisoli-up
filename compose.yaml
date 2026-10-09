@@ -10,8 +10,13 @@ services:
       - "8000:8000"
     volumes:
       - ./app:/app/app
+      - inventory_data:/data
     environment:
       - PYTHONUNBUFFERED=1
       - APP_ENV=development
+      - DATABASE_URL=sqlite:////data/inventory.db
     # Permite mandar señales SIGINT/SIGTERM limpias a Uvicorn
     init: true
+
+volumes:
+  inventory_data:
