@@ -15,5 +15,11 @@ services:
     environment:
       PYTHONUNBUFFERED: "1"
       APP_ENV: production
+      DATABASE_URL: sqlite:////data/inventory.db
+    volumes:
+      - inventory_data:/data
 
     init: true
+
+volumes:
+  inventory_data:
