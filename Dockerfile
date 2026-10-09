@@ -17,18 +17,30 @@ RUN uv sync --frozen --no-dev
 
 
 # Development
-FROM builder AS development
-RUN uv sync --frozen
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS development
+
+WORKDIR /app
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1
+
 
 RUN useradd --system \
-        --uid 10001 \
-        --create-home \
-        --shell /bin/bash \
-        appuser \
-    && chown -R appuser:appuser /app
+    --uid 10001 \
+    --create-home \
+    --shell /bin/bash \
+    appuser
 
-ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+#Cacheo dependencias completas
+COPY pyproject.toml uv.lock ./ 
+RUN uv sync --frozen --no-install-project
+
+# Copiar el código fuente con permisos de appuser
+COPY --chown=appuser:appuser . /app
+RUN uv sync --frozen
 
 USER appuser
 
@@ -38,7 +50,9 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 
 
 # Production
-FROM gcr.io/distroless/python3-debian12:nonroot AS production
+# Uso cc-debian12 porque el .venv de uv ya contiene el runtime de Python
+# y solo necesita librerías base de C/C++ (glibc).
+FROM gcr.io/distroless/cc-debian12:nonroot AS production
 
 WORKDIR /app
 
