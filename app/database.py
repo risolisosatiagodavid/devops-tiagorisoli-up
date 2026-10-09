@@ -3,7 +3,7 @@ from collections.abc import Generator
 from sqlalchemy import Float, Integer, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
-DATABASE_URL = "sqlite:///./inventory.db"
+DATABASE_URL = "sqlite:////data/inventory.db"
 
 engine = create_engine(
     DATABASE_URL,
