@@ -1,9 +1,15 @@
 from collections.abc import Generator
+import os
+from pathlib import Path
 
 from sqlalchemy import Float, Integer, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, sessionmaker
 
-DATABASE_URL = "sqlite:////data/inventory.db"
+DEFAULT_DATABASE_PATH = Path(__file__).resolve().parent.parent / "inventory.db"
+DATABASE_URL = os.environ.get(
+    "DATABASE_URL",
+    f"sqlite:///{DEFAULT_DATABASE_PATH}",
+)
 
 engine = create_engine(
     DATABASE_URL,
@@ -57,4 +63,3 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-
