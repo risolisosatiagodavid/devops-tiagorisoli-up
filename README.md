@@ -128,7 +128,7 @@ docker compose up -d
 
 ## Ejecución de Tests y Cobertura
 
-La suite de pruebas valida contratos HTTP, lógica de persistencia en memoria y manejo de excepciones mediante el cliente asíncrono de Starlette/FastAPI:
+La suite de pruebas valida contratos HTTP, persistencia SQLite y manejo de excepciones mediante el cliente de Starlette/FastAPI:
 
 ```bash
 # Ejecución estándar de tests
@@ -137,3 +137,5 @@ uv run pytest -v
 # Ejecución con reporte de cobertura detallado
 uv run pytest -v --cov=app --cov-report=term-missing
 ```
+
+La aplicación acepta `DATABASE_URL` para configurar SQLite. Si no se define, usa `inventory.db` en la raíz del proyecto; Docker Compose configura `/data/inventory.db` en su volumen persistente y CI usa una base temporal aislada.
