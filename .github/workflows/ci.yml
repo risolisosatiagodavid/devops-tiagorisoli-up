@@ -31,5 +31,7 @@ jobs:
           uv run cz check --rev-range origin/main..HEAD
 
       - name: Correr tests con pytest
+        env:
+          DATABASE_URL: sqlite:////tmp/inventory-ci.db
         run: |
           uv run pytest -v --cov=app --cov-report=term-missing

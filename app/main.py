@@ -1,10 +1,15 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 import tomllib
 from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
+
 from app.data_access import InventoryRepository
 from app.database import init_db
 from app.middleware import request_timing_middleware
 from app.schemas import Item, ItemUpdate
+
 
 def get_project_version() -> str:
     # Busca pyproject.toml en la raíz (un nivel arriba de app/)
@@ -15,19 +20,27 @@ def get_project_version() -> str:
             return data["project"]["version"]
     except Exception:
         return "0.1.0-dev"
-        
+
 APP_VERSION = get_project_version()
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    init_db()
+    yield
+
 
 app = FastAPI(
     title="Inventory API",
     description="API básica de gestión de inventario para TP DevOps",
     version=APP_VERSION,
+    lifespan=lifespan,
 )
 
 app.middleware("http")(request_timing_middleware)
 
-init_db()
 inventory_repository = InventoryRepository()
+
 
 @app.get("/", status_code=200)
 def read_root():
@@ -66,4 +79,3 @@ def delete_item(item_id: int):
     if not deleted:
         raise HTTPException(status_code=404, detail="Item no encontrado")
     return
-

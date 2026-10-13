@@ -6,10 +6,11 @@ from app.main import app, inventory_repository
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
 
 @pytest.fixture(autouse=True)
-def clean_repository():
+def clean_repository(client):
     inventory_repository.clear()
     yield
 

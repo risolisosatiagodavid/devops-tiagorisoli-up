@@ -32,7 +32,9 @@ RUN useradd --system \
     --uid 10001 \
     --create-home \
     --shell /bin/bash \
-    appuser
+    appuser \
+    && mkdir -p /data \
+    && chown -R appuser:appuser /data
 
 #Cacheo dependencias completas
 COPY pyproject.toml uv.lock ./ 
@@ -55,6 +57,9 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 FROM gcr.io/distroless/cc-debian12:nonroot AS production
 
 WORKDIR /app
+
+RUN mkdir -p /data \
+    && chown -R 65532:65532 /data
 
 COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
 COPY --from=builder --chown=nonroot:nonroot /app/app /app/app
