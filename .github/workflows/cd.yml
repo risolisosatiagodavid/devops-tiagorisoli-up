@@ -51,7 +51,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_USERNAME }}/inventoryapi-api:prod    
+          images: ${{ secrets.DOCKER_USERNAME }}/inventoryapi-api    
           tags: |
             type=raw,value=prod
             type=raw,value=latest
