@@ -1,3 +1,13 @@
+## v0.6.0 (2026-10-14)
+
+### Feat
+
+- add otel support for future integration
+
+### Refactor
+
+- optimize otel implementation and integration
+
 ## v0.5.1 (2026-10-09)
 
 ### Fix
