@@ -16,7 +16,7 @@ COPY . .
 RUN uv sync --frozen --no-dev
 
 RUN mkdir -p /data \
-    && ln -sf/ usr/bin/python3.11 /app/.venv/bin/python \
+    && ln -sf /usr/bin/python3.11 /app/.venv/bin/python \
     && sed -i 's|^home = .*|home = /usr/bin|' /app/.venv/pyvenv.cfg
 
 
@@ -62,7 +62,7 @@ WORKDIR /app
 
 COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
 COPY --from=builder --chown=nonroot:nonroot /app/app /app/app
-COPY --from=builder --chown=nonroot:nonroot /app/pyproject.toml
+COPY --from=builder --chown=nonroot:nonroot /app/pyproject.toml /app/pyproject.toml /app/pyproject.toml
 COPY --from=builder --chown=nonroot:nonroot /data /data
 
 ENV PATH="/app/.venv/bin:$PATH" \
