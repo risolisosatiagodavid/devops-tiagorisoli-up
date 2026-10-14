@@ -22,12 +22,15 @@ def get_project_version() -> str:
 
 APP_VERSION = get_project_version()
 
+provider = setup_telemetry(engine)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db()
-    setup_telemetry(engine)
     yield
+
+    if provider:
+        provider.shutdown()
 
 
 app = FastAPI(
@@ -37,7 +40,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.middleware("http")(request_timing_middleware)
 instrument_app(app)
 
 inventory_repository = InventoryRepository()
