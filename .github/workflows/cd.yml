@@ -61,9 +61,17 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
+          target: production
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
       - name: Trigger Render Deploy
-        run: curl -fsSL -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+        env:
+            DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+            DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+            BASE_HOOK=$(echo "$DEPLOY_HOOK" | sed 's/&imgURL=.*//' | tr -d '[:space:]')
+            echo "Longitud del hook base: ${#BASE_HOOK}"
+            curl -i -sSL -X GET -G "$BASE_HOOK" \
+              --data-urlencode "imgURL=docker.io/${DOCKER_USER}/inventoryapi-api:prod"
