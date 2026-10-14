@@ -6,9 +6,8 @@ from fastapi import FastAPI, HTTPException
 from app.core.telemetry import instrument_app, setup_telemetry
 from app.data_access import InventoryRepository
 from app.database import engine, init_db
-from app.middleware import request_timing_middleware
 from app.schemas import Item, ItemUpdate
-
+from app.core.telemetry import instrument_app, setup_telemetry
 
 def get_project_version() -> str:
     # Busca pyproject.toml en la raíz (un nivel arriba de app/)

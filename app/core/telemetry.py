@@ -1,5 +1,5 @@
 import os
-
+from fastapi import FastAPI
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
@@ -55,4 +55,12 @@ def setup_telemetry(engine=None) -> TracerProvider:
     if engine is not None and not SQLAlchemyInstrumentor().is_instrumented_by_opentelemetry:
         SQLAlchemyInstrumentor().instrument(engine=engine, enable_commenter=True)
 
-    return provider
+
+
+    return provider    
+    
+def instrument_app(app: FastAPI) -> None:
+    FastAPIInstrumentor.instrument_app(
+        app,
+        excluded_urls="health,metrics",
+    )
