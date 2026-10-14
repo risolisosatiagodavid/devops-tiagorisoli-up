@@ -15,6 +15,10 @@ COPY . .
 
 RUN uv sync --frozen --no-dev
 
+RUN mkdir -p /data \
+    && ln -sf /usr/bin/python3.11 /app/.venv/bin/python \
+    && sed -i 's|^home = .*|home = /usr/bin|' /app/.venv/pyvenv.cfg
+
 
 # Development
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS development
@@ -52,17 +56,13 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 
 
 # Production
-# Uso cc-debian12 porque el .venv de uv ya contiene el runtime de Python
-# y solo necesita librerías base de C/C++ (glibc).
-FROM gcr.io/distroless/cc-debian12:nonroot AS production
+FROM gcr.io/distroless/python3-debian12:nonroot AS production
 
 WORKDIR /app
 
-RUN mkdir -p /data \
-    && chown -R 65532:65532 /data
-
 COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
 COPY --from=builder --chown=nonroot:nonroot /app/app /app/app
+COPY --from=builder --chown=nonroot:nonroot /data /data
 
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
