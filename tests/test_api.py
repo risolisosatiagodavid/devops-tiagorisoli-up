@@ -21,15 +21,54 @@ def created_item(client):
     assert response.status_code == 201
     return response.json()
 
-## Root
-def test_read_root(client):
+def test_root_serves_frontend(client):
     response = client.get("/")
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert 'href="/static/styles.css"' in response.text
+    assert 'src="/static/app.js"' in response.text
+    assert 'id="refresh-products"' in response.text
+
+
+def test_health_page(client):
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert 'src="/static/health.js"' in response.text
+
+
+def test_health_page_script_is_served(client):
+    response = client.get("/static/health.js")
+
+    assert response.status_code == 200
+    assert "checkHealth" in response.text
+
+
+def test_health_check(client):
+    response = client.get("/healthz")
+
     assert response.status_code == 200
     assert response.json() == {
-    "status": "healthy", 
-    "service": "inventory-api",
-    "version": APP_VERSION,
+        "status": "healthy",
+        "service": "inventory-api",
+        "version": APP_VERSION,
     }
+
+def test_inventory_ui_serves_frontend(client):
+    response = client.get("/ui")
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert 'href="/static/styles.css"' in response.text
+    assert 'src="/static/app.js"' in response.text
+
+def test_inventory_ui_serves_static_assets(client):
+    response = client.get("/static/app.js")
+
+    assert response.status_code == 200
+    assert "loadProducts" in response.text
 
 #POST
 def test_create_item_success(client):
@@ -40,6 +79,7 @@ def test_create_item_success(client):
     res = response.json()
     assert "id" in res
     assert res["item"]["name"] == item_data["name"]
+    assert client.get("/items").json()[str(res["id"])] == item_data
 
 def test_create_item_invalid_data(client):
     item_data = {"name": "Mousepad gamer", "price": "invalid_price", "quantity": 10}

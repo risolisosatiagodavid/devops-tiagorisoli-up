@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2b">
+  <title>Estado del servicio | Inventory API</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/health.js" defer></script>
+</head>
+<body class="health-page">
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Ir al inventario">
+      <span class="brand-mark" aria-hidden="true">I</span>
+      <span>Inventory<span class="brand-light"> / status</span></span>
+    </a>
+    <a class="api-link" href="/">Volver al inventario <span aria-hidden="true">→</span></a>
+  </header>
+
+  <main class="health-content">
+    <p class="eyebrow">ESTADO DEL SISTEMA</p>
+    <h1>Estado del servicio</h1>
+    <p class="health-subtitle">Monitoreo en tiempo real de Inventory API.</p>
+
+    <section id="health-card" class="health-card" aria-live="polite" aria-busy="true">
+      <div class="health-card-top">
+        <span id="health-indicator" class="health-indicator pending" aria-hidden="true"><span></span></span>
+        <span id="health-label" class="health-label">Verificando servicio</span>
+      </div>
+      <p id="health-message" class="health-message">Consultando el estado actual de la API...</p>
+
+      <div class="health-details">
+        <div>
+          <span class="health-detail-label">Servicio</span>
+          <strong id="service-name">—</strong>
+        </div>
+        <div>
+          <span class="health-detail-label">Versión</span>
+          <strong id="service-version">—</strong>
+        </div>
+        <div>
+          <span class="health-detail-label">Última verificación</span>
+          <strong id="checked-at">En curso</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="health-actions">
+      <button id="check-again" class="button button-primary" type="button">Verificar ahora <span aria-hidden="true">↻</span></button>
+      <span>Actualización automática cada 30 segundos</span>
+    </div>
+
+    <footer>Inventory API <span>·</span> <a href="/docs">Documentación de la API</a></footer>
+  </main>
+</body>
+</html>

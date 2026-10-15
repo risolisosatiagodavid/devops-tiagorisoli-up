@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101a2b">
+  <title>Inventario | Inventory API</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/ui" aria-label="Inicio de Inventory">
+      <span class="brand-mark" aria-hidden="true">I</span>
+      <span>Inventory<span class="brand-light"> / control</span></span>
+    </a>
+    <a class="api-link" href="/docs" target="_blank" rel="noreferrer">Documentación API <span aria-hidden="true">↗</span></a>
+  </header>
+
+  <main class="page">
+    <section class="intro">
+      <div>
+        <p class="eyebrow">PANEL DE CONTROL</p>
+        <h1>Inventario</h1>
+        <p class="subtitle">Administra tus productos desde un solo lugar.</p>
+      </div>
+      <span id="api-status" class="service-status"><span class="status-dot"></span> Conectando con API...</span>
+    </section>
+
+    <section class="summary" aria-label="Resumen del inventario">
+      <article class="summary-card">
+        <span class="summary-icon icon-violet" aria-hidden="true">▦</span>
+        <div><p class="summary-label">Productos</p><strong id="product-count">—</strong></div>
+      </article>
+      <article class="summary-card">
+        <span class="summary-icon icon-green" aria-hidden="true">$</span>
+        <div><p class="summary-label">Valor del inventario</p><strong id="inventory-value">—</strong></div>
+      </article>
+      <article class="summary-card">
+        <span class="summary-icon icon-amber" aria-hidden="true">!</span>
+        <div><p class="summary-label">Stock bajo</p><strong id="low-stock-count">—</strong></div>
+      </article>
+    </section>
+
+    <section class="content-grid">
+      <section class="panel products-panel" aria-labelledby="products-heading">
+        <div class="panel-heading">
+          <div>
+            <h2 id="products-heading">Productos</h2>
+            <p class="panel-subtitle">Listado y disponibilidad actual</p>
+          </div>
+          <div class="list-controls">
+            <label class="search">
+              <span class="visually-hidden">Buscar productos</span>
+              <span aria-hidden="true">⌕</span>
+              <input id="search-input" type="search" placeholder="Buscar producto..." autocomplete="off">
+            </label>
+            <button class="button button-secondary refresh-button" id="refresh-products" type="button" aria-label="Actualizar productos" title="Actualizar productos">↻ <span>Actualizar</span></button>
+          </div>
+        </div>
+
+        <p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Producto</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Estado</th>
+                <th scope="col"><span class="visually-hidden">Acciones</span></th>
+              </tr>
+            </thead>
+            <tbody id="product-list">
+              <tr><td class="empty-state" colspan="5">Cargando productos...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="panel form-panel" aria-labelledby="create-heading">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">CATÁLOGO</p>
+            <h2 id="create-heading">Agregar producto</h2>
+          </div>
+          <span class="plus-mark" aria-hidden="true">+</span>
+        </div>
+        <form id="create-form">
+          <label for="name">Nombre del producto</label>
+          <input id="name" name="name" type="text" placeholder="Ej. Teclado mecánico" maxlength="255" required>
+
+          <div class="field-row">
+            <div>
+              <label for="price">Precio</label>
+              <div class="input-prefix"><span>$</span><input id="price" name="price" type="number" min="0" step="0.01" placeholder="0.00" required></div>
+            </div>
+            <div>
+              <label for="quantity">Cantidad</label>
+              <input id="quantity" name="quantity" type="number" min="0" step="1" placeholder="0" required>
+            </div>
+          </div>
+
+          <button class="button button-primary submit-button" type="submit">Agregar al inventario <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="form-note"><span aria-hidden="true">ⓘ</span> Los campos son obligatorios. El precio y la cantidad no pueden ser negativos.</p>
+      </aside>
+    </section>
+    <footer>Inventory API <span>·</span> Gestión simple de inventario</footer>
+  </main>
+
+  <dialog id="edit-dialog" class="edit-dialog">
+    <form id="edit-form">
+      <div class="dialog-heading">
+        <div><p class="eyebrow">ACTUALIZACIÓN</p><h2>Editar producto</h2></div>
+        <button class="icon-button" type="button" id="close-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <input id="edit-id" name="id" type="hidden">
+      <label for="edit-name">Nombre del producto</label>
+      <input id="edit-name" name="name" type="text" maxlength="255" required>
+      <div class="field-row">
+        <div><label for="edit-price">Precio</label><input id="edit-price" name="price" type="number" min="0" step="0.01" required></div>
+        <div><label for="edit-quantity">Cantidad</label><input id="edit-quantity" name="quantity" type="number" min="0" step="1" required></div>
+      </div>
+      <p id="edit-feedback" class="feedback" role="status" aria-live="polite"></p>
+      <div class="dialog-actions">
+        <button class="button button-secondary" type="button" id="cancel-edit">Cancelar</button>
+        <button class="button button-primary" type="submit">Guardar cambios</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
