@@ -3,11 +3,12 @@ from contextlib import asynccontextmanager
 import tomllib
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from app.core.telemetry import instrument_app, setup_telemetry
 from app.data_access import InventoryRepository
 from app.database import engine, init_db
 from app.schemas import Item, ItemUpdate
-from app.core.telemetry import instrument_app, setup_telemetry
 
 def get_project_version() -> str:
     # Busca pyproject.toml en la raíz (un nivel arriba de app/)
@@ -27,7 +28,6 @@ provider = setup_telemetry(engine)
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db()
     yield
-
     if provider:
         provider.shutdown()
 
@@ -41,11 +41,29 @@ app = FastAPI(
 
 instrument_app(app)
 
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
 inventory_repository = InventoryRepository()
 
 
-@app.get("/", status_code=200)
+@app.get("/ui", include_in_schema=False)
+def inventory_ui():
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/", include_in_schema=False)
 def read_root():
+    return FileResponse(STATIC_DIR / "index.html")
+
+
+@app.get("/health", include_in_schema=False)
+def health_page():
+    return FileResponse(STATIC_DIR / "health.html")
+
+
+@app.get("/healthz", status_code=200)
+def health_check():
     return {"status": "healthy", "service": "inventory-api", "version": APP_VERSION}
 
 @app.get("/items", status_code=200)
