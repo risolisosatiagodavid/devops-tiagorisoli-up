@@ -18,6 +18,7 @@ env/
 # Secretos y variables de entorno locales
 .env
 .env.*
+!.env.example
 *.local
 
 # IDEs y SO

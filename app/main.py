@@ -22,7 +22,7 @@ def get_project_version() -> str:
 
 APP_VERSION = get_project_version()
 
-provider = setup_telemetry(engine)
+provider = setup_telemetry(engine, service_version=APP_VERSION)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:

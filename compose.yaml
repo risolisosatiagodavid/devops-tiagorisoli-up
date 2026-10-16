@@ -14,7 +14,13 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - APP_ENV=development
+      - ENVIRONMENT=${ENVIRONMENT:-development}
       - DATABASE_URL=sqlite:////data/inventory.db
+      - OTEL_SERVICE_NAME=inventory-api
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS:-}
+      - OTEL_EXPORTER_OTLP_TRACES_HEADERS=${OTEL_EXPORTER_OTLP_TRACES_HEADERS:-}
     # Permite mandar señales SIGINT/SIGTERM limpias a Uvicorn
     init: true
 
