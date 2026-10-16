@@ -1,3 +1,14 @@
+## v0.7.0 (2026-10-16)
+
+### Feat
+
+- **ui**: add inventory and health dashboards with tests
+
+### Fix
+
+- **compose**: repair db volume permissions causing container to not start
+- **Dockerfile**: add missing destination for COPY (pyproject.toml) to resolve buildx parse error (#27)
+
 ## v0.6.0 (2026-10-14)
 
 ### Feat
