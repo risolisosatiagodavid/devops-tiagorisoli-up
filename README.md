@@ -38,11 +38,13 @@ Para la imagen final de despliegue se utiliza `gcr.io/distroless/python3-debian1
 
 ## Endpoints de la API
 
-La API expone operaciones RESTful estándar sobre el recurso `/items` y un endpoint raíz.
+La aplicación sirve el panel web en `/` y expone operaciones RESTful estándar sobre el recurso `/items`.
 
 | Método | Endpoint | Descripción | Códigos de Respuesta |
 |---|---|---|---|
-| `GET` | `/` | Healthcheck y metadatos dinámicos del servicio (`version`, `status`) | `200 OK` |
+| `GET` | `/` | Panel web de gestión del inventario | `200 OK` |
+| `GET` | `/health` | Página visual con el estado del servicio | `200 OK` |
+| `GET` | `/healthz` | Healthcheck JSON para monitoreo y automatizaciones | `200 OK` |
 | `GET` | `/items` | Lista la totalidad del inventario registrado | `200 OK` |
 | `GET` | `/items/{item_id}` | Obtiene el detalle de un ítem por ID | `200 OK`, `404 Not Found` |
 | `POST` | `/items` | Crea un nuevo ítem en el inventario | `201 Created` |
@@ -66,7 +68,7 @@ La API expone operaciones RESTful estándar sobre el recurso `/items` y un endpo
 El proyecto implementa **Semantic Versioning (SemVer)** automatizado mediante **Commitizen**. 
 
 * La versión oficial del proyecto se gestiona como fuente única de verdad en la clave `project.version` de `pyproject.toml`.
-* En runtime, el endpoint `/` resuelve la versión instalada mediante `tomllib` de forma nativa sin acoplamientos estáticos.
+* En runtime, el endpoint `/healthz` resuelve la versión instalada mediante `tomllib` de forma nativa sin acoplamientos estáticos.
 * Los mensajes de commit deben respetar la especificación de **Conventional Commits**:
   * `fix:` incrementa el segmento **PATCH** (`0.1.0` -> `0.1.1`).
   * `feat:` incrementa el segmento **MINOR** (`0.1.0` -> `0.2.0`).
@@ -110,8 +112,12 @@ El ciclo de integración y entrega continua se desacopla en dos flujos independi
    ```
 
 3. **Acceder a la documentación interactiva:**
+   * Panel web: `http://localhost:8000/`
+   * Estado del servicio: `http://localhost:8000/health`
    * Swagger UI: `http://localhost:8000/docs`
    * Redoc: `http://localhost:8000/redoc`
+
+   Si modificas productos desde Swagger mientras el panel está abierto, usa el botón **Actualizar** del listado o volve a la pestaña del panel para cargar los cambios.
 
 ### Opción B: Entorno Contenedorizado con Docker Compose
 
@@ -122,6 +128,12 @@ docker compose up
 
 # O en segundo plano
 docker compose up -d
+```
+
+Para levantar el entorno de produccion:
+
+```bash
+docker compose -f compose.prod.yaml up
 ```
 
 ---
