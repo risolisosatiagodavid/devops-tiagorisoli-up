@@ -25,6 +25,12 @@ def _get_traces_endpoint() -> str | None:
 
 
 def _get_otlp_headers() -> dict[str, str] | None:
+    
+    grafana_b64 = os.getenv("GRAFANA_AUTH_BASE64")
+    if grafana_b64:
+        return {"Authorization": f"Basic {grafana_b64.strip()}"}
+
+    # 2. Si viene por la variable estándar de OpenTelemetry
     headers_raw = (
         os.getenv("OTEL_EXPORTER_OTLP_TRACES_HEADERS")
         or os.getenv("OTEL_EXPORTER_OTLP_HEADERS")
