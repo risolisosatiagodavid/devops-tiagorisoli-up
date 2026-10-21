@@ -1,14 +1,3 @@
-## v0.8.0 (2026-10-16)
-
-### Feat
-
-- integrate grafana as monitoring provider
-
-### Fix
-
-- attempt to fix render deploy hook issue (#30)
-- change render deploy command format (#28)
-
 ## v0.7.0 (2026-10-16)
 
 ### Feat

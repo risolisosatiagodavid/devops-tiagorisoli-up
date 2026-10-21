@@ -130,21 +130,6 @@ docker compose up
 docker compose up -d
 ```
 
-#### Grafana Cloud (trazas OTLP)
-
-La aplicación exporta trazas a Grafana Cloud por OTLP/HTTP cuando se configura un endpoint. En Grafana Cloud, obtuve el endpoint OTLP y las cabeceras de autenticación desde la configuración de envío de datos del stack. En Render, se agregaron en **Environment** como variables del servicio:
-
-```env
-OTEL_SERVICE_NAME=inventory-api
-ENVIRONMENT=production
-OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-<region>.grafana.net/otlp
-OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <credencial-proporcionada-por-grafana>
-```
-
-Usa los valores exactos que te da Grafana Cloud; no agregar comillas ni guardar el token en el repositorio. La credencial debe configurarse como variable secreta en Render. La versión del servicio se obtiene de `pyproject.toml`, por lo que no hace falta configurar `APP_VERSION`. El exporter añade `/v1/traces` al endpoint OTLP general. También acepta `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` (endpoint de trazas completo) y `OTEL_EXPORTER_OTLP_TRACES_HEADERS`.
-
-Después del deploy, genera solicitudes a la API y consulta el servicio `inventory-api` en Grafana Cloud, en **Explore → Traces/Tempo**.
-
 Para levantar el entorno de produccion:
 
 ```bash
