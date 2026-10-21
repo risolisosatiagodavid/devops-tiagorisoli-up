@@ -8,7 +8,7 @@
 
 ### CI
 
-- publish and deploy Docker images using immutable SemVer tags
+- publish and deploy the project-versioned Docker image after changes reach main
 
 ## v0.9.0 (2026-10-21)
 
