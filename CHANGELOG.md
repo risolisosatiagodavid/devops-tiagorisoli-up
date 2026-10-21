@@ -1,3 +1,15 @@
+## v0.10.0 (2026-10-21)
+
+### Feat
+
+- add structured JSON request logs correlated with OpenTelemetry traces
+- add Prometheus HTTP metrics and a custom Grafana RED dashboard
+- add k6 load testing and run it in pull request CI
+
+### CI
+
+- publish and deploy Docker images using immutable SemVer tags
+
 ## v0.9.0 (2026-10-21)
 
 ### Feat
