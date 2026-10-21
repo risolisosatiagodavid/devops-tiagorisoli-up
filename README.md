@@ -73,6 +73,11 @@ El proyecto implementa **Semantic Versioning (SemVer)** automatizado mediante **
   * `fix:` incrementa el segmento **PATCH** (`0.1.0` -> `0.1.1`).
   * `feat:` incrementa el segmento **MINOR** (`0.1.0` -> `0.2.0`).
   * `feat!:` o `BREAKING CHANGE:` incrementa el segmento **MAJOR** (`0.1.0` -> `1.0.0`).
+  * `docs:`, `ci:` y `test:` no incrementan la versión de la API por sí solos.
+
+  Las releases se publican creando un tag Git `vMAJOR.MINOR.PATCH` sobre un commit cuya versión en `pyproject.toml` coincida exactamente. Por ejemplo, el tag `v0.10.0` genera y publica `docker.io/<usuario>/inventoryapi-api:0.10.0`, y Render recibe esa misma etiqueta inmutable. El workflow de CD se activa únicamente con tags de release; no publica ni despliega imágenes al hacer push a `main`. `prod` y `latest` no se usan como referencias de despliegue.
+
+  Para preparar una release, actualiza `project.version` y `CHANGELOG.md` en un PR convencional, espera su merge a `main` y, sobre ese commit ya integrado, crea y publica el tag correspondiente (por ejemplo `git tag v0.10.0 && git push origin v0.10.0`). El workflow falla antes de publicar si el tag no coincide con `project.version`.
 
 ---
 
@@ -82,9 +87,13 @@ El ciclo de integración y entrega continua se desacopla en dos flujos independi
 
    **Integración Continua (`ci.yml`):**
    * Se ejecuta ante cada `pull_request` contra la rama `main`.
-   * Realiza un shallow clone completo (`fetch-depth: 0`) para validar que todos los commits introducidos en la rama sigan la convención (`cz check`).
-   * Instala las dependencias con caché optimizado de `uv`.
-   * Ejecuta la suite de pruebas unitarias con reporte de cobertura obligatorio (`pytest --cov=app --cov-report=term-missing`).
+   * Descarga el historial completo para validar los commits del PR (`cz check`).
+   * Ejecuta la suite con cobertura, levanta la API mediante Compose y corre k6 con umbrales de latencia y errores.
+
+   **Entrega Continua (`cd.yml`):**
+   * Se ejecuta al publicar un tag Git `vMAJOR.MINOR.PATCH`.
+   * Comprueba que el tag coincide con `project.version`, corre los tests y publica una imagen con el tag SemVer sin prefijo `v`.
+   * Invoca el Deploy Hook de Render pasando exactamente la misma etiqueta de imagen publicada.
 
 
 ---
