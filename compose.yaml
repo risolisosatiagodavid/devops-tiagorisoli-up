@@ -20,6 +20,16 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
     depends_on:
       - otel-collector
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://localhost:8000/healthz', timeout=2)"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
     # Permite mandar señales SIGINT/SIGTERM limpias a Uvicorn
     init: true
 
@@ -64,10 +74,39 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
     depends_on:
       - tempo
+      - prometheus
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    depends_on:
+      - api
+
+  k6:
+    image: grafana/k6:0.55.0
+    profiles: ["load-test"]
+    volumes:
+      - ./scripts/k6-load-test.js:/scripts/load-test.js:ro
+    environment:
+      K6_BASE_URL: http://api:8000
+    command: ["run", "/scripts/load-test.js"]
+    depends_on:
+      - api
 
 volumes:
   inventory_data:
   tempo_data:
   grafana_data:
+  prometheus_data:

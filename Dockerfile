@@ -52,7 +52,7 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--no-access-log", "--log-config", "app/core/logging_config.json"]
 
 
 # Production
@@ -71,4 +71,4 @@ ENV PATH="/app/.venv/bin:$PATH" \
 EXPOSE 8000
 
 ENTRYPOINT ["/app/.venv/bin/python", "-m", "uvicorn"]
-CMD ["app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-access-log", "--log-config", "app/core/logging_config.json"]

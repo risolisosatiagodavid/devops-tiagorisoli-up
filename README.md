@@ -108,7 +108,7 @@ El ciclo de integración y entrega continua se desacopla en dos flujos independi
 
 2. **Iniciar el servidor con hot-reload:**
    ```bash
-   uv run uvicorn app.main:app --reload --port 8000
+   uv run uvicorn app.main:app --reload --port 8000 --no-access-log --log-config app/core/logging_config.json
    ```
 
 3. **Acceder a la documentación interactiva:**
@@ -130,9 +130,23 @@ docker compose up
 docker compose up -d
 ```
 
-El entorno local inicia también Grafana, Tempo y OpenTelemetry Collector. La API envía trazas al Collector por OTLP/HTTP y Tempo las almacena. Abre Grafana en `http://localhost:3000` (usuario y contraseña iniciales: `admin` / `admin`; puedes definir `GRAFANA_ADMIN_PASSWORD` para cambiarla). En Grafana, abre **Explore**, selecciona **Tempo** y busca el servicio `inventory-api`. Genera tráfico abriendo `http://localhost:8000/` o consultando `/items`.
+El entorno local inicia Grafana, Prometheus, Tempo y OpenTelemetry Collector. Esta configuración usa Grafana autogestionado localmente (no Grafana Cloud): Prometheus recolecta las métricas HTTP desde `/metrics` y la API exporta trazas por OTLP al Collector, que las envía a Tempo. Puedes comprobar Prometheus en `http://localhost:9090`. Abre Grafana en `http://localhost:3000` (usuario y contraseña iniciales: `admin` / `admin`; puedes definir `GRAFANA_ADMIN_PASSWORD` para cambiarla).
 
-La instrumentación SQLAlchemy requiere SQLAlchemy 2.0.x; la dependencia está acotada a esa versión para que OpenTelemetry también produzca spans de base de datos.
+El dashboard **Inventory API - RED** fue diseñado para este proyecto y se aprovisiona desde [inventory-api.json](./observability/grafana/dashboards/inventory-api.json); no parte de una plantilla. Muestra tráfico en requests por minuto (RPM), latencia p50 y p95 por ruta y la tasa de errores HTTP 4xx/5xx, además del porcentaje de respuestas 2xx y la latencia promedio. En **Explore**, selecciona **Tempo** para inspeccionar trazas. Genera tráfico abriendo `http://localhost:8000/` o consultando `/items`; puedes generar un 404 consultando `/items/999999`.
+
+#### Generar tráfico de carga con k6
+
+Con el stack local iniciado, ejecuta la prueba acotada con:
+
+```bash
+docker compose --profile load-test run --rm k6
+```
+
+k6 consulta `/items` y genera un 404 esperado en una de cada cinco iteraciones para alimentar también las métricas de error. El escenario dura unos 50 segundos con hasta 3 usuarios virtuales, valida los códigos HTTP y exige p95 menor a 500 ms. Los errores 404 son parte intencional del tráfico y se consideran respuestas esperadas para k6. Mientras corre, abre **Inventory API - RED** en Grafana y selecciona una ventana que incluya el test (por ejemplo, **Last 5 minutes**). Para apuntar a otra URL, se define `K6_BASE_URL`; por defecto, dentro de Compose apunta a `http://api:8000`.
+
+El workflow de CI también levanta la API con `docker compose up --build --wait --wait-timeout 90 api`; Compose usa el healthcheck de `/healthz` para esperar a que esté lista y después corre el mismo escenario de k6 en cada pull request hacia `main`. Si k6 falla sus checks o umbrales, el job de CI falla; al finalizar, el workflow elimina sus contenedores y volúmenes efímeros.
+
+La API emite un log JSON por request con `timestamp`, `level`, `path` y `status_code` (además de método, duración, `trace_id` y `span_id`). En rutas instrumentadas, esos identificadores corresponden al span HTTP de OpenTelemetry: copia el `trace_id` del log y búscalo en **Grafana > Explore > Tempo** para abrir la traza relacionada. Las rutas excluidas de tracing, como health checks y `/metrics`, pueden tener los identificadores en `null`. Los logs se escriben en stdout del contenedor; todavía no se envían a Grafana como un datasource de logs. El access log de Uvicorn está desactivado para evitar líneas duplicadas sin estructura. Los endpoints `/metrics`, `/healthz`, `/health` y los recursos estáticos quedan excluidos de las métricas de requests, pero los logs de requests se conservan. Las métricas usan rutas parametrizadas para evitar etiquetas de alta cardinalidad, por ejemplo `/items/{item_id}`. El histograma permite calcular percentiles por ruta; p50 y p95 representan la distribución de latencia de las requests en la ventana elegida. La instrumentación SQLAlchemy requiere SQLAlchemy 2.0.x; la dependencia está acotada a esa versión para que OpenTelemetry también produzca spans de base de datos.
 
 Para levantar el entorno de produccion:
 
