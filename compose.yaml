@@ -14,9 +14,60 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - APP_ENV=development
+      - ENVIRONMENT=development
       - DATABASE_URL=sqlite:////data/inventory.db
+      - OTEL_SERVICE_NAME=inventory-api
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+    depends_on:
+      - otel-collector
     # Permite mandar señales SIGINT/SIGTERM limpias a Uvicorn
     init: true
 
+  tempo-data-permissions:
+    image: ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+    user: "0:0"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - mkdir -p /var/tempo/wal /var/tempo/blocks && chown -R 10001:10001 /var/tempo
+    volumes:
+      - tempo_data:/var/tempo
+    restart: "no"
+
+  otel-collector:
+    image: ghcr.io/open-telemetry/opentelemetry-collector-releases/opentelemetry-collector-contrib:0.120.0
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - tempo
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo.yaml:ro
+      - tempo_data:/var/tempo
+    depends_on:
+      tempo-data-permissions:
+        condition: service_completed_successfully
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - tempo
+
 volumes:
   inventory_data:
+  tempo_data:
+  grafana_data:

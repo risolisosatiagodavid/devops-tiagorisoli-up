@@ -9,7 +9,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 
-def setup_telemetry(engine=None) -> TracerProvider:
+def setup_telemetry(engine=None, *, service_version: str = "0.1.0") -> TracerProvider:
     provider = trace.get_tracer_provider()
 
     if isinstance(provider, TracerProvider):
@@ -20,7 +20,7 @@ def setup_telemetry(engine=None) -> TracerProvider:
     #configurar resource
     resource = Resource.create({
         "service.name": os.getenv("OTEL_SERVICE_NAME", "inventory-api"),
-        "service.version": os.getenv("APP_VERSION", "0.1.0"),
+        "service.version": service_version,
         "deployment.environment": os.getenv("ENVIRONMENT", "production"),
     })
 

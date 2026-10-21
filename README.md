@@ -130,6 +130,10 @@ docker compose up
 docker compose up -d
 ```
 
+El entorno local inicia también Grafana, Tempo y OpenTelemetry Collector. La API envía trazas al Collector por OTLP/HTTP y Tempo las almacena. Abre Grafana en `http://localhost:3000` (usuario y contraseña iniciales: `admin` / `admin`; puedes definir `GRAFANA_ADMIN_PASSWORD` para cambiarla). En Grafana, abre **Explore**, selecciona **Tempo** y busca el servicio `inventory-api`. Genera tráfico abriendo `http://localhost:8000/` o consultando `/items`.
+
+La instrumentación SQLAlchemy requiere SQLAlchemy 2.0.x; la dependencia está acotada a esa versión para que OpenTelemetry también produzca spans de base de datos.
+
 Para levantar el entorno de produccion:
 
 ```bash

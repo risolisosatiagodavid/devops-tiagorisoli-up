@@ -14,7 +14,7 @@ dependencies = [
     "opentelemetry-instrumentation-fastapi>=0.66b1",
     "opentelemetry-instrumentation-sqlalchemy>=0.66b1",
     "opentelemetry-sdk>=1.45.1",
-    "sqlalchemy>=2.0.0",
+    "sqlalchemy>=2.0.0,<2.1.0",
     "uvicorn>=0.52.4",
 ]
 
