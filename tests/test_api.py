@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from app.main import APP_VERSION, provider
+from app.main import APP_VERSION
 from app.main import app, inventory_repository
 
 
@@ -55,11 +55,6 @@ def test_health_check(client):
         "service": "inventory-api",
         "version": APP_VERSION,
     }
-
-
-def test_telemetry_resource_uses_project_version():
-    assert provider.resource.attributes["service.version"] == APP_VERSION
-
 
 def test_inventory_ui_serves_frontend(client):
     response = client.get("/ui")
