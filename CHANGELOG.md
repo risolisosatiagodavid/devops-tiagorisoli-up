@@ -1,3 +1,17 @@
+## v0.8.0 (2026-10-21)
+
+### Feat
+
+- add k6 for load testing and traffic generation
+- **monitoring**: add logs with json logging integration
+- add prometheus integration for monitoring
+
+### Fix
+
+- **telemetry**: correct header format for grafana cloud otel exporting (#33)
+- attempt to fix render deploy hook issue (#30)
+- change render deploy command format (#28)
+
 ## v0.7.0 (2026-10-16)
 
 ### Feat
