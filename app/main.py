@@ -5,6 +5,8 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from app.core.logging import configure_logging
+from app.core.metrics import PrometheusMetricsMiddleware, metrics_response
 from app.core.telemetry import instrument_app, setup_telemetry
 from app.data_access import InventoryRepository
 from app.database import engine, init_db
@@ -22,6 +24,7 @@ def get_project_version() -> str:
 
 APP_VERSION = get_project_version()
 
+configure_logging()
 provider = setup_telemetry(engine, service_version=APP_VERSION)
 
 @asynccontextmanager
@@ -40,6 +43,7 @@ app = FastAPI(
 )
 
 instrument_app(app)
+app.add_middleware(PrometheusMetricsMiddleware)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -65,6 +69,12 @@ def health_page():
 @app.get("/healthz", status_code=200)
 def health_check():
     return {"status": "healthy", "service": "inventory-api", "version": APP_VERSION}
+
+
+@app.get("/metrics", include_in_schema=False)
+def metrics():
+    return metrics_response()
+
 
 @app.get("/items", status_code=200)
 def get_items():

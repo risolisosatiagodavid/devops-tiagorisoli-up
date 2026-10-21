@@ -1,5 +1,9 @@
+import json
+import logging
+
 import pytest
 from fastapi.testclient import TestClient
+from app.core.logging import JsonFormatter
 from app.main import APP_VERSION
 from app.main import app, inventory_repository
 
@@ -55,6 +59,40 @@ def test_health_check(client):
         "service": "inventory-api",
         "version": APP_VERSION,
     }
+
+
+def test_metrics_endpoint_exposes_http_requests(client):
+    client.get("/items/99999")
+
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "text/plain" in response.headers["content-type"]
+    assert 'inventory_http_requests_total{method="GET",route="/items/{item_id}",status="404"}' in response.text
+    assert "inventory_http_request_duration_seconds_bucket" in response.text
+    assert 'route="/metrics"' not in response.text
+
+
+def test_http_request_log_is_structured_json(client, caplog):
+    with caplog.at_level(logging.INFO, logger="inventory_api"):
+        response = client.get("/items/99999")
+
+    assert response.status_code == 404
+    record = next(
+        record
+        for record in caplog.records
+        if record.name == "inventory_api"
+        and record.getMessage() == "HTTP request completed"
+    )
+    event = json.loads(JsonFormatter().format(record))
+
+    assert event["timestamp"]
+    assert event["level"] == "INFO"
+    assert event["path"] == "/items/99999"
+    assert event["status_code"] == 404
+    assert event["method"] == "GET"
+    assert event["duration_seconds"] >= 0
+
 
 def test_inventory_ui_serves_frontend(client):
     response = client.get("/ui")
