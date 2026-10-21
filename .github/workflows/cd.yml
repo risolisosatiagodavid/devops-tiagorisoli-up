@@ -71,7 +71,10 @@ jobs:
           file: ./Dockerfile
           target: production
           push: true
-          tags: ${{ steps.meta.outputs.image }}
+          tags: |
+            docker.io/${{ secrets.DOCKER_USERNAME }}/inventoryapi-api:${{ needs.test.outputs.version }}
+            docker.io/${{ secrets.DOCKER_USERNAME }}/inventoryapi-api:latest
+
 
       - name: Trigger Render Deploy
         env:
