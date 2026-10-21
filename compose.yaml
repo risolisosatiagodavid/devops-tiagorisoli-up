@@ -84,6 +84,17 @@ services:
     depends_on:
       - api
 
+  k6:
+    image: grafana/k6:0.55.0
+    profiles: ["load-test"]
+    volumes:
+      - ./scripts/k6-load-test.js:/scripts/load-test.js:ro
+    environment:
+      K6_BASE_URL: http://api:8000
+    command: ["run", "/scripts/load-test.js"]
+    depends_on:
+      - api
+
 volumes:
   inventory_data:
   tempo_data:
