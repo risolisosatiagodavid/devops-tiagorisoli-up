@@ -75,9 +75,7 @@ El proyecto implementa **Semantic Versioning (SemVer)** automatizado mediante **
   * `feat!:` o `BREAKING CHANGE:` incrementa el segmento **MAJOR** (`0.1.0` -> `1.0.0`).
   * `docs:`, `ci:` y `test:` no incrementan la versión de la API por sí solos.
 
-  Las releases se publican creando un tag Git `vMAJOR.MINOR.PATCH` sobre un commit cuya versión en `pyproject.toml` coincida exactamente. Por ejemplo, el tag `v0.10.0` genera y publica `docker.io/<usuario>/inventoryapi-api:0.10.0`, y Render recibe esa misma etiqueta inmutable. El workflow de CD se activa únicamente con tags de release; no publica ni despliega imágenes al hacer push a `main`. `prod` y `latest` no se usan como referencias de despliegue.
-
-  Para preparar una release, actualiza `project.version` y `CHANGELOG.md` en un PR convencional, espera su merge a `main` y, sobre ese commit ya integrado, crea y publica el tag correspondiente (por ejemplo `git tag v0.10.0 && git push origin v0.10.0`). El workflow falla antes de publicar si el tag no coincide con `project.version`.
+  Al integrar cambios en `main`, el workflow de CD publica `docker.io/<usuario>/inventoryapi-api:<project.version>` y solicita a Render desplegar esa imagen. La versión del tag Docker se lee de `pyproject.toml`; si se integran varios cambios sin incrementar la versión, el mismo tag se vuelve a publicar y Render despliega su contenido actualizado. Por eso, incrementa la versión en `pyproject.toml` cuando corresponda según Conventional Commits. `prod` y `latest` no se usan como referencias de despliegue.
 
 ---
 
@@ -91,9 +89,8 @@ El ciclo de integración y entrega continua se desacopla en dos flujos independi
    * Ejecuta la suite con cobertura, levanta la API mediante Compose y corre k6 con umbrales de latencia y errores.
 
    **Entrega Continua (`cd.yml`):**
-   * Se ejecuta al publicar un tag Git `vMAJOR.MINOR.PATCH`.
-   * Comprueba que el tag coincide con `project.version`, corre los tests y publica una imagen con el tag SemVer sin prefijo `v`.
-   * Invoca el Deploy Hook de Render pasando exactamente la misma etiqueta de imagen publicada.
+   * Se ejecuta al hacer push a `main` (por ejemplo, al integrar un PR), corre los tests y publica la imagen usando `project.version`.
+   * Invoca el Deploy Hook de Render pasando la misma etiqueta de imagen publicada.
 
 
 ---
