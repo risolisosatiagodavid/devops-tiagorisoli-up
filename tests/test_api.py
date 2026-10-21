@@ -92,6 +92,10 @@ def test_http_request_log_is_structured_json(client, caplog):
     assert event["status_code"] == 404
     assert event["method"] == "GET"
     assert event["duration_seconds"] >= 0
+    assert len(event["trace_id"]) == 32
+    assert len(event["span_id"]) == 16
+    assert int(event["trace_id"], 16) > 0
+    assert int(event["span_id"], 16) > 0
 
 
 def test_inventory_ui_serves_frontend(client):

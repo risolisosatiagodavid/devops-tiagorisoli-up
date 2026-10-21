@@ -17,6 +17,8 @@ class JsonFormatter(logging.Formatter):
             "status_code": getattr(record, "status_code", None),
             "method": getattr(record, "method", None),
             "duration_seconds": getattr(record, "duration_seconds", None),
+            "trace_id": getattr(record, "trace_id", None),
+            "span_id": getattr(record, "span_id", None),
         }
         if record.exc_info:
             event["exception"] = self.formatException(record.exc_info)

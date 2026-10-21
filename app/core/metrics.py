@@ -4,6 +4,7 @@ from typing import Any
 
 from prometheus_client import CollectorRegistry, Counter, Histogram, generate_latest
 from prometheus_client.exposition import CONTENT_TYPE_LATEST
+from opentelemetry import trace
 from starlette.responses import Response
 
 logger = logging.getLogger("inventory_api")
@@ -50,6 +51,7 @@ class PrometheusMetricsMiddleware:
             route_path = getattr(route, "path", "unmatched")
             method = scope["method"]
             duration = perf_counter() - start_time
+            span_context = trace.get_current_span().get_span_context()
             logger.info(
                 "HTTP request completed",
                 extra={
@@ -57,6 +59,8 @@ class PrometheusMetricsMiddleware:
                     "status_code": status_code,
                     "method": method,
                     "duration_seconds": duration,
+                    "trace_id": f"{span_context.trace_id:032x}" if span_context.is_valid else None,
+                    "span_id": f"{span_context.span_id:016x}" if span_context.is_valid else None,
                 },
             )
             if record_metrics:
