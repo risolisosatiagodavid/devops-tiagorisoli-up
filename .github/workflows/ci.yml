@@ -35,3 +35,13 @@ jobs:
           DATABASE_URL: sqlite:////tmp/inventory-ci.db
         run: |
           uv run pytest -v --cov=app --cov-report=term-missing
+
+      - name: Levantar API para prueba de carga
+        run: docker compose up --build --wait --wait-timeout 90 api
+
+      - name: Ejecutar prueba de carga con k6
+        run: docker compose --profile load-test run --rm k6
+
+      - name: Limpiar servicios de Compose
+        if: always()
+        run: docker compose down --volumes --remove-orphans
