@@ -1,4 +1,5 @@
 from collections.abc import AsyncIterator
+import asyncio
 from contextlib import asynccontextmanager
 import tomllib
 from pathlib import Path
@@ -77,7 +78,8 @@ def metrics():
 
 
 @app.get("/items", status_code=200)
-def get_items():
+async def get_items():
+    await asyncio.sleep(1)
     return inventory_repository.get_all()
 
 @app.get("/items/{item_id}", status_code=200)
