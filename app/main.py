@@ -12,6 +12,8 @@ from app.data_access import InventoryRepository
 from app.database import engine, init_db
 from app.schemas import Item, ItemUpdate
 
+print("Starting Inventory API...")
+
 def get_project_version() -> str:
     # Busca pyproject.toml en la raíz (un nivel arriba de app/)
     pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
