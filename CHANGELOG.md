@@ -1,3 +1,13 @@
+## v0.11.0 (2026-10-30)
+
+### Feat
+
+- **main**: add app startup message
+
+### Fix
+
+- **compose**: resolve docker volume permissions issue (#40)
+
 ## v0.10.0 (2026-10-21)
 
 ### Feat
