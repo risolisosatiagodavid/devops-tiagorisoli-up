@@ -75,6 +75,9 @@ jobs:
       runs-on: ubuntu-latest
       needs: [quality-and-commits, unit-tests]
       steps:
+        - name: Checkout del código
+          uses: actions/checkout@v4
+      
         - name: Levantar API para prueba de carga
           run: docker compose up --build --wait --wait-timeout 90 api
         
@@ -83,4 +86,4 @@ jobs:
         
         - name: Limpiar servicios de Compose
           if: always()
-          run: docker compose -f compose.yaml down --volumes --remove-orphans
+          run: docker compose down --volumes --remove-orphans
