@@ -3,6 +3,7 @@ name: CI Pipeline
 on:
   pull_request:
     branches: [main]
+  workflow_call:
 
 jobs:
   test-and-lint:
@@ -23,12 +24,46 @@ jobs:
       - name: Configurar Python
         run: uv python install 3.11
 
+      - name: Preparar baseline para previsualizar versión
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          LATEST_TAG="$(git tag --list 'v[0-9]*' --sort=-version:refname | head -n1)"
+          if [[ -n "$LATEST_TAG" ]]; then
+            VERSION="${LATEST_TAG#v}"
+            [[ "$VERSION" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] \
+              || { echo "El tag $LATEST_TAG no tiene formato semver" >&2; exit 1; }
+            TAG_VERSION="$(git show "${LATEST_TAG}:pyproject.toml" | sed -n 's/^version = "\([^"]*\)"$/\1/p')"
+            [[ "$TAG_VERSION" == "$VERSION" ]] \
+              || { echo "$LATEST_TAG no coincide con la versión $TAG_VERSION de pyproject.toml" >&2; exit 1; }
+            sed -i "s/^version = \".*\"$/version = \"$VERSION\"/" pyproject.toml
+            git show "${LATEST_TAG}:CHANGELOG.md" > CHANGELOG.md
+            uv lock --offline
+          fi
+
       - name: Instalar dependencias
         run: uv sync --all-extras --dev
 
       - name: Validar Conventional Commits
+        if: github.event_name == 'pull_request'
         run: |
           uv run cz check --rev-range origin/main..HEAD
+
+      - name: Previsualizar bump de versión
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set +e
+          uv run cz bump --dry-run --yes
+          STATUS=$?
+          set -e
+          if [[ "$STATUS" -eq 3 ]]; then
+            echo "No hay commits que requieran una nueva versión."
+            exit 0
+          fi
+          if [[ "$STATUS" -ne 0 ]]; then
+            exit "$STATUS"
+          fi
 
       - name: Correr tests con pytest
         env:
