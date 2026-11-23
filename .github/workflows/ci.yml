@@ -43,7 +43,7 @@ jobs:
           uv run cz bump --dry-run --yes
           STATUS=$?
           set -e
-          if [[ "$STATUS" -eq 3 ]]; then
+          if [[ "$STATUS" -eq 21 ]]; then
             echo "No hay commits que requieran una nueva versión."
             exit 0
           fi
