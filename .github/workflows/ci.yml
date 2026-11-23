@@ -3,9 +3,13 @@ name: CI Pipeline
 on:
   pull_request:
     branches: [main]
+  workflow_call:
+
+permissions: 
+  contents: read
 
 jobs:
-  test-and-lint:
+  quality-and-commits:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,24 +28,62 @@ jobs:
         run: uv python install 3.11
 
       - name: Instalar dependencias
-        run: uv sync --all-extras --dev
+        run: uv sync --locked --only-group dev
 
       - name: Validar Conventional Commits
+        if: github.event_name == 'pull_request'
         run: |
-          uv run cz check --rev-range origin/main..HEAD
+          uv run cz check --rev-range ${{ github.event.pull_request.base.sha }}..HEAD
 
-      - name: Correr tests con pytest
-        env:
-          DATABASE_URL: sqlite:////tmp/inventory-ci.db
+      - name: Previsualizar bump de versión
+        if: github.event_name == 'pull_request'
+        shell: bash
         run: |
-          uv run pytest -v --cov=app --cov-report=term-missing
+          set +e
+          uv run cz bump --dry-run --yes
+          STATUS=$?
+          set -e
+          if [[ "$STATUS" -eq 21 ]]; then
+            echo "No hay commits que requieran una nueva versión."
+            exit 0
+          fi
+          if [[ "$STATUS" -ne 0 ]]; then
+            exit "$STATUS"
+          fi
 
-      - name: Levantar API para prueba de carga
-        run: docker compose up --build --wait --wait-timeout 90 api
-
-      - name: Ejecutar prueba de carga con k6
-        run: docker compose --profile load-test run --rm k6
-
-      - name: Limpiar servicios de Compose
-        if: always()
-        run: docker compose down --volumes --remove-orphans
+  unit-tests:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout del código
+          uses: actions/checkout@v4
+  
+        - name: Instalar uv
+          uses: astral-sh/setup-uv@v5
+          with:
+            enable-cache: true
+            cache-dependency-glob: "uv.lock"
+  
+        - name: Instalar dependencias
+          run: uv sync --locked --all-extras --dev
+  
+        - name: Correr tests con pytest
+          env:
+            DATABASE_URL: sqlite:////tmp/inventory-ci.db
+          run: uv run pytest -v --cov=app --cov-report=term-missing
+        
+  load-test:
+      runs-on: ubuntu-latest
+      needs: [quality-and-commits, unit-tests]
+      steps:
+        - name: Checkout del código
+          uses: actions/checkout@v4
+      
+        - name: Levantar API para prueba de carga
+          run: docker compose up --build --wait --wait-timeout 90 api
+        
+        - name: Ejecutar prueba de carga con k6
+          run: docker compose --profile load-test run --rm k6
+        
+        - name: Limpiar servicios de Compose
+          if: always()
+          run: docker compose down --volumes --remove-orphans
