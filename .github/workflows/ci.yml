@@ -76,10 +76,10 @@ jobs:
       needs: [quality-and-commits, unit-tests]
       steps:
         - name: Levantar API para prueba de carga
-          run: docker compose -f compose.yaml up --build --wait --wait-timeout 90 api
+          run: docker compose up --build --wait --wait-timeout 90 api
         
         - name: Ejecutar prueba de carga con k6
-          run: docker compose -f compose.yaml --profile load-test run --rm k6
+          run: docker compose --profile load-test run --rm k6
         
         - name: Limpiar servicios de Compose
           if: always()
