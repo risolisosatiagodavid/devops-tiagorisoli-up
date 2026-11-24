@@ -26,14 +26,14 @@ def get_project_version() -> str:
 APP_VERSION = get_project_version()
 
 configure_logging()
-provider = setup_telemetry(engine, service_version=APP_VERSION)
+telemetry = setup_telemetry(engine, service_version=APP_VERSION)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     init_db()
     yield
-    if provider:
-        provider.shutdown()
+    if telemetry:
+        telemetry.shutdown()
 
 
 app = FastAPI(
