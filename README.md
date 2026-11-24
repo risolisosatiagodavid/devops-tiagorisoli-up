@@ -148,7 +148,13 @@ k6 consulta `/items` y genera un 404 esperado en una de cada cinco iteraciones. 
 
 El workflow de CI también levanta la API con `docker compose up --build --wait --wait-timeout 90 api`; Compose usa el healthcheck de `/healthz` para esperar a que esté lista y después corre el mismo escenario de k6 en cada pull request hacia `main`. Si k6 falla sus checks o umbrales, el job de CI falla; al finalizar, el workflow elimina sus contenedores y volúmenes efímeros.
 
-La API emite un log JSON por request en stdout con `timestamp`, `level`, `path` y `status_code` (además de método, duración, `trace_id` y `span_id`). En rutas instrumentadas, esos identificadores corresponden al span HTTP de OpenTelemetry (configurable mediante `OTEL_EXPORTER_OTLP_ENDPOINT` y `OTEL_EXPORTER_OTLP_HEADERS`). Las rutas excluidas de tracing, como health checks, pueden tener los identificadores en `null`. El access log de Uvicorn está desactivado para evitar líneas duplicadas sin estructura. La instrumentación SQLAlchemy requiere SQLAlchemy 2.0.x; la dependencia está acotada a esa versión para que OpenTelemetry también produzca spans de base de datos.
+La API emite un log JSON por request en stdout con `timestamp`, `level`, `path` y `status_code` (además de método, duración, `trace_id` y `span_id`). El access log de Uvicorn está desactivado para evitar líneas duplicadas sin estructura. La instrumentación SQLAlchemy requiere SQLAlchemy 2.0.x; la dependencia está acotada a esa versión para que OpenTelemetry también produzca spans de base de datos.
+
+#### Observabilidad con OpenTelemetry (OTLP) y Datadog Cloud
+
+La aplicación está instrumentada con **OpenTelemetry estándar** (agnóstico al backend) y exporta **trazas**, **métricas HTTP RED** (`inventory.http.requests` e `inventory.http.request.duration`) y **logs correlacionados** por OTLP HTTP/protobuf cuando se define `OTEL_EXPORTER_OTLP_ENDPOINT` (o sus variantes por señal). Si no se define ningún endpoint OTLP, la API sigue generando `trace_id`/`span_id` localmente en los logs JSON sin realizar llamadas de red.
+
+Toda la configuración específica de **Datadog Cloud** (override de Docker Compose, plantilla `.env.example`, dashboard RED, monitores y guía de setup para local y Render) está aislada en [observability/datadog/](./observability/datadog/README.md).
 
 Para levantar el entorno de produccion:
 
