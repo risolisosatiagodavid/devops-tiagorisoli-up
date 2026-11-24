@@ -1,0 +1,184 @@
+{
+  "title": "Inventory API - RED",
+  "description": "Dashboard RED (Rate, Errors, Duration) y logs correlacionados para Inventory API vía OpenTelemetry (OTLP).",
+  "layout_type": "ordered",
+  "reflow_type": "auto",
+  "template_variables": [
+    {
+      "name": "env",
+      "prefix": "env",
+      "available_values": [],
+      "default": "production"
+    },
+    {
+      "name": "service",
+      "prefix": "service",
+      "available_values": [],
+      "default": "inventory-api"
+    }
+  ],
+  "widgets": [
+    {
+      "definition": {
+        "title": "Total HTTP Requests",
+        "type": "query_value",
+        "requests": [
+          {
+            "q": "sum:inventory.http.requests{$env,$service}.as_count()"
+          }
+        ],
+        "autoscale": true,
+        "precision": 0,
+        "text_align": "center"
+      }
+    },
+    {
+      "definition": {
+        "title": "HTTP 2xx Success Rate (%)",
+        "type": "query_value",
+        "requests": [
+          {
+            "formulas": [
+              {
+                "formula": "(ok / total) * 100"
+              }
+            ],
+            "queries": [
+              {
+                "name": "ok",
+                "data_source": "metrics",
+                "query": "sum:inventory.http.requests{$env,$service,http.response.status_code:2*}.as_count()",
+                "aggregator": "sum"
+              },
+              {
+                "name": "total",
+                "data_source": "metrics",
+                "query": "sum:inventory.http.requests{$env,$service}.as_count()",
+                "aggregator": "sum"
+              }
+            ]
+          }
+        ],
+        "autoscale": false,
+        "custom_unit": "%",
+        "precision": 2,
+        "text_align": "center"
+      }
+    },
+    {
+      "definition": {
+        "title": "Average Latency (s)",
+        "type": "query_value",
+        "requests": [
+          {
+            "q": "avg:inventory.http.request.duration{$env,$service}"
+          }
+        ],
+        "autoscale": true,
+        "precision": 4,
+        "text_align": "center"
+      }
+    },
+    {
+      "definition": {
+        "title": "Request Rate by Route (req/s)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:inventory.http.requests{$env,$service} by {http.route,http.request.method}.as_rate()",
+            "display_type": "line",
+            "style": {
+              "palette": "dog_classic",
+              "line_width": "normal",
+              "line_type": "solid"
+            }
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "min": "0"
+        }
+      }
+    },
+    {
+      "definition": {
+        "title": "HTTP Error Rate (4xx / 5xx)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:inventory.http.requests{$env,$service,http.response.status_code:4*} by {http.route,http.response.status_code}.as_rate()",
+            "display_type": "bars",
+            "style": {
+              "palette": "orange"
+            }
+          },
+          {
+            "q": "sum:inventory.http.requests{$env,$service,http.response.status_code:5*} by {http.route,http.response.status_code}.as_rate()",
+            "display_type": "bars",
+            "style": {
+              "palette": "red"
+            }
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "min": "0"
+        }
+      }
+    },
+    {
+      "definition": {
+        "title": "Request Latency p50 & p95 by Route (s)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "p50:inventory.http.request.duration{$env,$service} by {http.route}",
+            "display_type": "line",
+            "style": {
+              "palette": "cool",
+              "line_width": "normal",
+              "line_type": "dashed"
+            }
+          },
+          {
+            "q": "p95:inventory.http.request.duration{$env,$service} by {http.route}",
+            "display_type": "line",
+            "style": {
+              "palette": "warm",
+              "line_width": "thick",
+              "line_type": "solid"
+            }
+          }
+        ],
+        "yaxis": {
+          "scale": "linear",
+          "min": "0"
+        }
+      }
+    },
+    {
+      "definition": {
+        "title": "Inventory API Logs (OTLP Correlated)",
+        "type": "log_stream",
+        "query": "$service $env",
+        "indexes": [
+          "main"
+        ],
+        "show_date_column": true,
+        "show_message_column": true,
+        "columns": [
+          "service",
+          "status",
+          "http.method",
+          "path",
+          "status_code"
+        ],
+        "sort": {
+          "column": "time",
+          "order": "desc"
+        }
+      }
+    }
+  ]
+}
+

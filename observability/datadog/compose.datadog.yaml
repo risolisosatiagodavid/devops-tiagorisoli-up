@@ -1,0 +1,16 @@
+# Docker Compose override para conectar la API a Datadog Cloud vía OTLP directo (agentless).
+#
+# Producción:
+#   docker compose --env-file observability/datadog/.env -f compose.prod.yaml -f observability/datadog/compose.datadog.yaml up -d
+#
+# Desarrollo:
+#   DD_ENV=development docker compose --env-file observability/datadog/.env -f compose.yaml -f observability/datadog/compose.datadog.yaml up
+services:
+  api:
+    environment:
+      OTEL_SERVICE_NAME: ${DD_SERVICE:-inventory-api}
+      ENVIRONMENT: ${DD_ENV:-production}
+      OTEL_EXPORTER_OTLP_ENDPOINT: https://otlp.${DD_SITE:-datadoghq.com}
+      OTEL_EXPORTER_OTLP_HEADERS: dd-api-key=${DD_API_KEY:?Debes definir DD_API_KEY en observability/datadog/.env}
+      OTEL_EXPORTER_OTLP_TRACES_HEADERS: dd-api-key=${DD_API_KEY:?Debes definir DD_API_KEY en observability/datadog/.env},compute_stats=true
+      OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: delta

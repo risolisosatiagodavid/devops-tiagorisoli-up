@@ -1,0 +1,40 @@
+[
+  {
+    "name": "[Inventory API][prod] High p95 HTTP Latency (> 500ms)",
+    "type": "metric alert",
+    "query": "avg(last_5m):p95:inventory.http.request.duration{service:inventory-api,env:production} by {http.route} > 0.5",
+    "message": "La latencia p95 en producción ({{http.route.name}}) superó los 500 ms en los últimos 5 minutos.",
+    "tags": [
+      "service:inventory-api",
+      "env:production",
+      "signal:latency"
+    ],
+    "options": {
+      "thresholds": {
+        "critical": 0.5,
+        "warning": 0.35
+      },
+      "notify_no_data": false,
+      "renotify_interval": 0
+    }
+  },
+  {
+    "name": "[Inventory API][prod] HTTP 5xx Server Errors",
+    "type": "metric alert",
+    "query": "sum(last_5m):sum:inventory.http.requests{service:inventory-api,env:production,http.response.status_code:5*}.as_count() > 5",
+    "message": "Se detectaron más de 5 respuestas HTTP 5xx en producción (inventory-api) durante los últimos 5 minutos. Revisa APM Traces y Logs correlacionados.",
+    "tags": [
+      "service:inventory-api",
+      "env:production",
+      "signal:errors"
+    ],
+    "options": {
+      "thresholds": {
+        "critical": 5,
+        "warning": 1
+      },
+      "notify_no_data": false,
+      "renotify_interval": 0
+    }
+  }
+]
