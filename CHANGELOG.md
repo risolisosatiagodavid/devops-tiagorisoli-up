@@ -1,3 +1,9 @@
+## v0.12.0 (2026-11-24)
+
+### Feat
+
+- **observability**: migrate from local Grafana stack to Datadog Cloud via OTLP (#46)
+
 ## v0.11.0 (2026-10-30)
 
 ### Feat
