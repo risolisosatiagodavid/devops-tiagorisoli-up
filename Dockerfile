@@ -62,7 +62,7 @@ WORKDIR /app
 
 COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
 COPY --from=builder --chown=nonroot:nonroot /app/app /app/app
-COPY --from=builder --chown=nonroot:nonroot /app/pyproject.toml /app/pyproject.toml /app/pyproject.toml
+COPY --from=builder --chown=nonroot:nonroot /app/pyproject.toml /app/pyproject.toml
 COPY --from=builder --chown=nonroot:nonroot /data /data
 
 ENV PATH="/app/.venv/bin:$PATH" \

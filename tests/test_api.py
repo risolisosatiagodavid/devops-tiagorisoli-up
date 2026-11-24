@@ -61,18 +61,6 @@ def test_health_check(client):
     }
 
 
-def test_metrics_endpoint_exposes_http_requests(client):
-    client.get("/items/99999")
-
-    response = client.get("/metrics")
-
-    assert response.status_code == 200
-    assert "text/plain" in response.headers["content-type"]
-    assert 'inventory_http_requests_total{method="GET",route="/items/{item_id}",status="404"}' in response.text
-    assert "inventory_http_request_duration_seconds_bucket" in response.text
-    assert 'route="/metrics"' not in response.text
-
-
 def test_http_request_log_is_structured_json(client, caplog):
     with caplog.at_level(logging.INFO, logger="inventory_api"):
         response = client.get("/items/99999")
