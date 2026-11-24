@@ -72,7 +72,7 @@ jobs:
 
           TAG="$(git describe --exact-match --tags HEAD)"
 
-          uv lock --offline
+          uv lock --no-upgrade
           git add uv.lock
           if ! git diff --cached --quiet; then
             git tag --delete "$TAG"
