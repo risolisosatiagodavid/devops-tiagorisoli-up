@@ -62,5 +62,5 @@ def setup_telemetry(engine=None, *, service_version: str = "0.1.0") -> TracerPro
 def instrument_app(app: FastAPI) -> None:
     FastAPIInstrumentor.instrument_app(
         app,
-        excluded_urls="health,metrics",
+        excluded_urls="health",
     )

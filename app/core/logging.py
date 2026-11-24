@@ -2,7 +2,12 @@ from datetime import UTC, datetime
 import json
 import logging
 import logging.config
+from time import perf_counter
 from typing import Any
+
+from opentelemetry import trace
+
+logger = logging.getLogger("inventory_api")
 
 
 class JsonFormatter(logging.Formatter):
@@ -23,6 +28,43 @@ class JsonFormatter(logging.Formatter):
         if record.exc_info:
             event["exception"] = self.formatException(record.exc_info)
         return json.dumps(event, ensure_ascii=False)
+
+
+class RequestLoggingMiddleware:
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: dict, receive: Any, send: Any) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        start_time = perf_counter()
+        status_code = 500
+
+        async def record_status(message: dict) -> None:
+            nonlocal status_code
+            if message["type"] == "http.response.start":
+                status_code = message["status"]
+            await send(message)
+
+        try:
+            await self.app(scope, receive, record_status)
+        finally:
+            method = scope["method"]
+            duration = perf_counter() - start_time
+            span_context = trace.get_current_span().get_span_context()
+            logger.info(
+                "HTTP request completed",
+                extra={
+                    "path": scope["path"],
+                    "status_code": status_code,
+                    "method": method,
+                    "duration_seconds": duration,
+                    "trace_id": f"{span_context.trace_id:032x}" if span_context.is_valid else None,
+                    "span_id": f"{span_context.span_id:016x}" if span_context.is_valid else None,
+                },
+            )
 
 
 def configure_logging() -> None:
