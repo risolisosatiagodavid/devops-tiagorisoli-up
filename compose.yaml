@@ -23,9 +23,13 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - APP_ENV=development
-      - ENVIRONMENT=development
+      - ENVIRONMENT=${ENVIRONMENT:-development}
       - DATABASE_URL=sqlite:////data/inventory.db
-      - OTEL_SERVICE_NAME=inventory-api
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-inventory-api}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS:-}
+      - OTEL_EXPORTER_OTLP_TRACES_HEADERS=${OTEL_EXPORTER_OTLP_TRACES_HEADERS:-}
+      - OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE=${OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE:-delta}
     depends_on:
       inventory-data-permissions:
         condition: service_completed_successfully

@@ -24,7 +24,13 @@ services:
     environment:
       PYTHONUNBUFFERED: "1"
       APP_ENV: production
+      ENVIRONMENT: ${ENVIRONMENT:-production}
       DATABASE_URL: sqlite:////data/inventory.db
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME:-inventory-api}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:-}
+      OTEL_EXPORTER_OTLP_TRACES_HEADERS: ${OTEL_EXPORTER_OTLP_TRACES_HEADERS:-}
+      OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: ${OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE:-delta}
     volumes:
       - inventory_data:/data
 
@@ -32,6 +38,18 @@ services:
       data-permissions:
         condition: service_completed_successfully
 
+    healthcheck:
+      test:
+        - CMD
+        - /app/.venv/bin/python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://localhost:8000/healthz', timeout=2)"
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+    restart: unless-stopped
     init: true
 
 volumes:
