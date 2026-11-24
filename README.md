@@ -146,7 +146,7 @@ docker compose --profile load-test run --rm k6
 
 k6 consulta `/items` y genera un 404 esperado en una de cada cinco iteraciones. El escenario dura unos 50 segundos con hasta 3 usuarios virtuales, valida los códigos HTTP y exige p95 menor a 500 ms. Los errores 404 son parte intencional del tráfico y se consideran respuestas esperadas para k6. Para apuntar a otra URL, se define `K6_BASE_URL`; por defecto, dentro de Compose apunta a `http://api:8000`.
 
-El workflow de CI también levanta la API con `docker compose up --build --wait --wait-timeout 90 api`; Compose usa el healthcheck de `/healthz` para esperar a que esté lista y después corre el mismo escenario de k6 en cada pull request hacia `main`. Si k6 falla sus checks o umbrales, el job de CI falla; al finalizar, el workflow elimina sus contenedores y volúmenes efímeros.
+El workflow de CI también levanta la imagen de producción con `docker compose -f compose.prod.yaml up --build --wait --wait-timeout 90 api`; Compose usa el healthcheck de `/healthz` para esperar a que esté lista y después corre el mismo escenario de k6 en cada pull request hacia `main`. Si k6 falla sus checks o umbrales, el job de CI falla; al finalizar, el workflow elimina sus contenedores y volúmenes efímeros.
 
 La API emite un log JSON por request en stdout con `timestamp`, `level`, `path` y `status_code` (además de método, duración, `trace_id` y `span_id`). El access log de Uvicorn está desactivado para evitar líneas duplicadas sin estructura. La instrumentación SQLAlchemy requiere SQLAlchemy 2.0.x; la dependencia está acotada a esa versión para que OpenTelemetry también produzca spans de base de datos.
 
